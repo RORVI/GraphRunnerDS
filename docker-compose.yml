@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  # Launch 5 ingestion agents by default — scale up with `--scale` flag
+  ds:
+    build:
+      context: .
+    container_name: graphrunner-ds
+    environment:
+      - GRAPH_RUNNER_URL=http://host.docker.internal:3000/ingest
+      - SEND_INTERVAL_MS=1000
+      - TEMPLATE_PATH=./templates/sample-template.json
+    volumes:
+      - ./templates:/app/templates
+    deploy:
+      replicas: 5  # Can be overridden via CLI
+    restart: always

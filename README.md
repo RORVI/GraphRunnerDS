@@ -77,16 +77,17 @@ docker run --rm -e CONFIG_FILE=config.json graphrunnerds
 ```
 
 Spin up 20–30 of them to test GraphRunner's ingestion power 💣
+The ds parameter is optional to overwrite the number of instances generated. It is 5 by default.
+```bash
+docker compose up --build --scale ds=20
+```
 
 🧪 Next Steps
 
-- [] Add Prometheus metrics for emitted data rate
-
-- [] Auto-discover GraphRunner nodes (if clustered)
-
-- [] Config endpoint to control data templates remotely
-
-- [] Support multiple data models via profiles
+- [ ] Configurable ingestion rate via external config file
+- [ ] Auto-discovery of GraphRunner nodes in a clustered environment
+- [ ] Dynamic configuration endpoint for updating data templates at runtime
+- [ ] Support for switching between multiple data generation profiles
 
 🤝 Project Integration
 

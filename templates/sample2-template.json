@@ -1,0 +1,11 @@
+{
+    "endpoint": "http://localhost:3000/api/vertex",
+    "intervalMs": 50,
+    "concurrency": 5,
+    "template": {
+      "name": "{{name.firstName}} {{name.lastName}}",
+      "label": "person",
+      "email": "{{internet.email}}",
+      "company": "{{company.companyName}}"
+    }
+  }

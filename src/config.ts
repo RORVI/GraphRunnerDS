@@ -1,5 +1,5 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import fs from 'fs';
+import path from 'path';
 
 export interface Config {
   graphRunnerUrl: string;
@@ -8,9 +8,19 @@ export interface Config {
 }
 
 export function loadConfig(): Config {
+  const templateId = process.env.TEMPLATE_ID || '01';
+  const templateDir = './templates';
+
+  const files = fs.readdirSync(templateDir);
+  const matchedFile = files.find(f => f.startsWith(templateId + '-'));
+
+  if (!matchedFile) {
+    throw new Error(`❌ No template file found for ID ${templateId}`);
+  }
+
   return {
     graphRunnerUrl: process.env.GRAPH_RUNNER_URL || 'http://localhost:3000/ingest',
     sendInterval: parseInt(process.env.SEND_INTERVAL_MS || '1000', 10),
-    templatePath: process.env.TEMPLATE_PATH || './templates/sample-template.json',
+    templatePath: path.join(templateDir, matchedFile)
   };
 }

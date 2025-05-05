@@ -4,97 +4,123 @@
   <img src="GraphRunnerDS.png" alt="GraphRunnerDS Logo" width="300" />
 </p>
 
-**GraphRunnerDS** is a data generation and injection system designed to **stress-test [GraphRunner](https://github.com/RORVI/GraphRunner)**. It simulates real-world conditions by spawning multiple instances that bombard GraphRunner with high-volume, structured, fake data at scale.
-
-> DS = Data Shooter / Data Spammer / Distributed Sender — your choice 😎
+GraphRunnerDS is a high-volume, template-driven data emitter built for simulating real-time ingestion into the [GraphRunner](https://github.com/RORVI/GraphRunner) backend. It is designed to run in multiple concurrent instances and push fake-but-realistic data using structured JSON templates and Faker.js.
 
 ---
 
-## 🚀 Purpose
+## 🚀 Key Features
 
-- Generate **high-throughput fake data** using `faker.js`
-- Dynamically controlled via **configurable JSON templates**
-- Fire continuous HTTP requests into the **GraphRunner** API
-- Scale to **20–30 instances**, pushing **hundreds of megabits/sec** worth of ingest traffic
-
----
-
-## 🧰 Features
-
-- ✅ JSON-based data generation schemas
-- ✅ Built with **Node.js** and **TypeScript**
-- 🔁 Easy horizontal scaling (Docker-ready)
-- 🔧 Runtime configurable (template switching, frequency control)
-- 📡 High performance — built for pressure testing
+- 🔁 Multiple concurrent Docker agents (scalable to 20–30 instances)
+- 🎛️ JSON-based template system (powered by Faker)
+- ⚙️ Controlled emit rate via `SEND_INTERVAL_MS`
+- 🌐 HTTP POST to GraphRunner’s `/ingest` endpoint
+- 🐳 Lightweight Docker support for isolated load testing
 
 ---
 
-## 🛠️ Getting Started
+## 📦 Project Structure
 
-### 1. Clone the project
-
-```bash
-git clone https://github.com/RORVI/GraphRunnerDS.git
-cd GraphRunnerDS
-npm install
+```
+GraphRunnerDS/
+├── Dockerfile
+├── docker-compose.yml (optional)
+├── launch-multi.sh       # Spin up multiple agents
+├── templates/            # Holds data emission templates
+│   └── sample.template.json           # Realistic template/s (private/local use)
+├── src/
+│   ├── config.ts         # Loads .env vars and template file
+│   ├── generator.ts      # Fakes and shapes graph data
+│   ├── sender.ts         # Sends it via Axios
+│   └── index.ts          # Entry point
+└── .env                  # ENV config for local dev
 ```
 
-### 2. Configure the template
+---
 
-Create a config.json that describes the shape of the data:
-```json
-{
-  "endpoint": "http://localhost:3000/api/vertex",
-  "intervalMs": 50,
-  "concurrency": 5,
-  "template": {
-    "name": "{{name.firstName}} {{name.lastName}}",
-    "label": "person",
-    "email": "{{internet.email}}",
-    "company": "{{company.companyName}}"
-  }
-}
+## 🛠️ Usage (Local Testing)
+
+### 1. Build Docker image
+```bash
+docker build -t graphrunnerds .
 ```
 
-### 3. Run it
-
+### 2. Launch agents with unique templates
 ```bash
-npm run start
+bash launch-multi.sh
 ```
 
-Or, if you've added live config reload:
+### 3. Start GraphRunner on port 3000 (must expose `/ingest`)
 ```bash
+cd ../GraphRunner
 npm run dev
 ```
 
-📦 Docker
-
-You can run multiple containers simultaneously:
-
+### 4. Watch the logs
 ```bash
-docker build -t graphrunnerds .
-docker run --rm -e CONFIG_FILE=config.json graphrunnerds
+docker logs -f graphrunner-ds-01
 ```
 
-Spin up 20–30 of them to test GraphRunner's ingestion power 💣
-The ds parameter is optional to overwrite the number of instances generated. It is 5 by default.
-```bash
-docker compose up --build --scale ds=20
+> Each agent sends data to `http://host.docker.internal:3000/ingest`
+
+---
+
+## ⚙️ Environment Variables
+
+These can be set via `.env` or inline with `docker run`:
+
+| Variable           | Description                                     | Default                        |
+|--------------------|-------------------------------------------------|--------------------------------|
+| `TEMPLATE_ID`      | ID of the template to use (e.g. `01`, `10`)     | `01`                           |
+| `SEND_INTERVAL_MS` | Delay between emissions in milliseconds         | `1000`                         |
+| `GRAPH_RUNNER_URL` | URL of the ingestion endpoint                   | `http://localhost:3000/ingest` |
+
+---
+
+## 📁 Template Format
+
+Templates live in `templates/` and must be named like:
+```
+01-sample-template.json
+02-sample2-template.json
 ```
 
-🧪 Next Steps
+Each template defines:
+- `vertices`: devices or services
+- `edges`: relationships (e.g. CONNECTED_TO)
+- optional: `shared_ref` for linking templates
+- optional: `netZone` for segmentation
 
-- [ ] Configurable ingestion rate via external config file
-- [ ] Auto-discovery of GraphRunner nodes in a clustered environment
-- [ ] Dynamic configuration endpoint for updating data templates at runtime
-- [ ] Support for switching between multiple data generation profiles
+These are rendered with Faker.js and sent as JSON payloads.
 
-🤝 Project Integration
+> 🚫 Current templates are **not published** due to potential NDA overlap.
 
-This project is meant to work hand-in-hand with:
+---
 
-🔗 [GraphRunner](https://github.com/RORVI/GraphRunner) — the graph backend built for speed and clean architecture
+## ✅ Coming Soon
 
-🧾 License
+- [ ] Support for Redis-backed queueing
+- [ ] Exposed config control API (start/stop/change rate)
+- [ ] Public-friendly template set (IoT, fraud, social, etc)
+- [ ] Speed limitation based on each template (100mbits/sec - 1000mbits/sec)
+- [ ] Add a 'catalogue' for templates
 
-MIT — blast responsibly.
+---
+
+## 🤝 Contributions
+
+Feel free to fork and extend this! All contributions are welcome — especially:
+- new data model templates
+- rate limiting strategies
+- visual dashboards for real-time traffic
+
+---
+
+## 👀 See Also
+
+- [GraphRunner](https://github.com/RORVI/GraphRunner) – backend ingestion + processing engine
+- [JanusGraph Visualizer for GraphRunner](https://github.com/RORVI/janusgraph-visualizer-for-graphrunner) – graph UI to browse the live data
+
+---
+
+## 📣 License
+MIT — except the templates, which are local/dev-only for now.

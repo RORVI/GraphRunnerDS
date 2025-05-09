@@ -37,5 +37,14 @@ function parseTemplate(template: any): any {
 export function generateData(templatePath: string): any {
   const raw = fs.readFileSync(path.resolve(templatePath), 'utf-8');
   const template = JSON.parse(raw);
-  return parseTemplate(template);
+  const parsed = parseTemplate(template);
+
+  console.log("✅ Generated payload:", JSON.stringify(parsed, null, 2));
+
+  // ✅ Ensure proper structure for GraphRunner ingestion
+  return {
+    vertices: parsed.vertices || [],
+    edges: parsed.edges || []
+  };
 }
+

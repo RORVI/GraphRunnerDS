@@ -1,11 +1,13 @@
 {
-    "endpoint": "http://localhost:3000/api/vertex",
-    "intervalMs": 50,
-    "concurrency": 5,
-    "template": {
-      "name": "{{name.firstName}} {{name.lastName}}",
+  "vertices": [
+    {
       "label": "person",
-      "email": "{{internet.email}}",
-      "company": "{{company.companyName}}"
+      "props": {
+        "name": "{{name.firstName}} {{name.lastName}}",
+        "email": "{{internet.email}}",
+        "company": "{{company.companyName}}"
+      }
     }
-  }
+  ],
+  "edges": []
+}

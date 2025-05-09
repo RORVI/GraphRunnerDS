@@ -17,7 +17,7 @@ do
   docker run -d \
     --name "$CONTAINER_NAME" \
     -e TEMPLATE_ID=$TEMPLATE_ID \
-    -e GRAPH_RUNNER_URL=http://host.docker.internal:3000/ingest \
+    -e GRAPH_RUNNER_URL=http://host.docker.internal:3030/ingest \
     -e SEND_INTERVAL_MS=1000 \
     -v "$(pwd)/app/templates" \
     $IMAGE_TAG

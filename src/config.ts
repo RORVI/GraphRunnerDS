@@ -19,7 +19,7 @@ export function loadConfig(): Config {
   }
 
   return {
-    graphRunnerUrl: process.env.GRAPH_RUNNER_URL || 'http://localhost:3000/ingest',
+    graphRunnerUrl: process.env.GRAPH_RUNNER_URL || 'http://localhost:3030/ingest',
     sendInterval: parseInt(process.env.SEND_INTERVAL_MS || '1000', 10),
     templatePath: path.join(templateDir, matchedFile)
   };

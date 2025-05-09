@@ -14,6 +14,7 @@ GraphRunnerDS is a high-volume, template-driven data emitter built for simulatin
 - 🎛️ JSON-based template system (powered by Faker)
 - ⚙️ Controlled emit rate via `SEND_INTERVAL_MS`
 - 🌐 HTTP POST to GraphRunner’s `/ingest` endpoint
+- 📡 Kafka producer support (preferred path)
 - 🐳 Lightweight Docker support for isolated load testing
 
 ---
@@ -26,11 +27,13 @@ GraphRunnerDS/
 ├── docker-compose.yml (optional)
 ├── launch-multi.sh       # Spin up multiple agents
 ├── templates/            # Holds data emission templates
-│   └── sample.template.json           # Realistic template/s (private/local use)
+│   └── 01-10-template.json etc
 ├── src/
 │   ├── config.ts         # Loads .env vars and template file
 │   ├── generator.ts      # Fakes and shapes graph data
-│   ├── sender.ts         # Sends it via Axios
+│   ├── transport/
+│   │   ├── sender.ts     # HTTP transport (legacy/fallback)
+│   │   └── kafkaProducer.ts  # Kafka-based transport
 │   └── index.ts          # Entry point
 └── .env                  # ENV config for local dev
 ```
@@ -60,7 +63,7 @@ npm run dev
 docker logs -f graphrunner-ds-01
 ```
 
-> Each agent sends data to `http://host.docker.internal:3000/ingest`
+Kafka-enabled mode will publish to graphrunner.ingest topic instead of HTTP.
 
 ---
 
@@ -68,11 +71,18 @@ docker logs -f graphrunner-ds-01
 
 These can be set via `.env` or inline with `docker run`:
 
-| Variable           | Description                                     | Default                        |
-|--------------------|-------------------------------------------------|--------------------------------|
-| `TEMPLATE_ID`      | ID of the template to use (e.g. `01`, `10`)     | `01`                           |
-| `SEND_INTERVAL_MS` | Delay between emissions in milliseconds         | `1000`                         |
-| `GRAPH_RUNNER_URL` | URL of the ingestion endpoint                   | `http://localhost:3000/ingest` |
+| Variable                 | Description                                                | Default                          |
+|--------------------------|------------------------------------------------------------|----------------------------------|
+| `TEMPLATE_ID`            | ID of the template to use (e.g. `01`, `10`)                | `01`                             |
+| `SEND_INTERVAL_MS`       | Delay between emissions in milliseconds                    | `1000`                           |
+| `USE_KAFKA`              | If `true`, sends data to Kafka topic                       | `false`                          |
+| `KAFKA_MODE`             | Mode to resolve broker address (`local` or `docker`)       | `local`                          |
+| `KAFKA_BROKER_LOCALHOST` | Kafka broker for local use                                 | `localhost:9092`                 |
+| `KAFKA_BROKER_DOCKER`    | Kafka broker for Docker use                                | `kafka:9092`                     |
+| `KAFKA_TOPIC`            | Kafka topic to publish to                                  | `graphrunner.ingest`             |
+| `GRAPH_RUNNER_URL`       | HTTP fallback endpoint for ingestion                       | `http://localhost:3030/ingest`   |
+
+
 
 ---
 
@@ -92,13 +102,11 @@ Each template defines:
 
 These are rendered with Faker.js and sent as JSON payloads.
 
-> 🚫 Current templates are **not published** due to potential NDA overlap.
-
 ---
 
 ## ✅ Coming Soon
 
-- [ ] Support for Redis-backed queueing
+- [x] Support for Kafka
 - [ ] Exposed config control API (start/stop/change rate)
 - [ ] Public-friendly template set (IoT, fraud, social, etc)
 - [ ] Speed limitation based on each template (100mbits/sec - 1000mbits/sec)

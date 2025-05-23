@@ -4,9 +4,9 @@
   "description": "Stress test tool for GraphRunner",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
+    "dev": "ts-node packages/core/index.ts",
+    "start": "lerna run start --scope @graphrunnerds/core",
+    "build": "lerna run build"
   },
   "repository": {
     "type": "git",
@@ -31,8 +31,11 @@
   "devDependencies": {
     "@types/faker": "^6.6.8",
     "@types/node": "^20.4.2",
+    "lerna": "^8.2.2",
     "nodemon": "^3.0.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
-  }
+  },
+  "workspaces": ["packages/*"],
+  "private": true
 }

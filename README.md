@@ -4,66 +4,47 @@
   <img src="GraphRunnerDS.png" alt="GraphRunnerDS Logo" width="300" />
 </p>
 
-GraphRunnerDS is a high-volume, template-driven data emitter built for simulating real-time ingestion into the [GraphRunner](https://github.com/RORVI/GraphRunner) backend. It is designed to run in multiple concurrent instances and push fake-but-realistic data using structured JSON templates and Faker.js.
+GraphRunnerDS is a modular data ingestion and simulation platform designed to stress-test and populate [GraphRunner](https://github.com/RORVI/GraphRunner) — a graph-based analytics engine. It supports ingestion of fake-but-realistic data using structured templates, and is capable of delivering that data over Kafka or HTTP for advanced graph-based processing and visualization.
 
 ---
 
 ## 🚀 Key Features
 
-- 🔁 Multiple concurrent Docker agents (scalable to 20–30 instances)
-- 🎛️ JSON-based template system (powered by Faker)
-- ⚙️ Controlled emit rate via `SEND_INTERVAL_MS`
-- 🌐 HTTP POST to GraphRunner’s `/ingest` endpoint
-- 📡 Kafka producer support (preferred path)
-- 🐳 Lightweight Docker support for isolated load testing
+- 📊 Modular ingestion architecture (via [Lerna](https://lerna.js.org/) + npm workspaces)
+- 🦢 Faker-based log generation (CESNET-inspired network behaviors)
+- 🧠 Vectorization-ready interface for LLMs (with local/remote file support planned)
+- 📩 Kafka or HTTP delivery modes
+- ⚙️ Configurable via `.env`
+- 🛣️ Scalable via Docker agents (up to 30+ instances)
 
 ---
 
 ## 📦 Project Structure
 
-```
+```bash
 GraphRunnerDS/
 ├── Dockerfile
-├── docker-compose.yml (optional)
-├── launch-multi.sh       # Spin up multiple agents
-├── templates/            # Holds data emission templates
-│   └── 01-10-template.json etc
-├── src/
-│   ├── config.ts         # Loads .env vars and template file
-│   ├── generator.ts      # Fakes and shapes graph data
-│   ├── transport/
-│   │   ├── sender.ts     # HTTP transport (legacy/fallback)
-│   │   └── kafkaProducer.ts  # Kafka-based transport
-│   └── index.ts          # Entry point
-└── .env                  # ENV config for local dev
+├── docker-compose.yml
+├── launch-agents.sh
+├── packages/
+│   ├── core/               # Orchestrator & shared config/transport
+│   │   ├── config.ts
+│   │   ├── generator.ts
+│   │   ├── transport/
+│   │   │   ├── producer.ts     # Kafka
+│   │   │   └── sender.ts       # REST
+│   │   └── index.ts            # Startup logic
+│   ├── ingestion-faker/    # Simulated log generator (CESNET templates)
+│   │   ├── index.ts
+│   │   └── templates/
+│   │       └── ...json
+│   └── vectorizer/         # Vectorizes local/drive files for LLMs (internal only)
+│       └── index.ts
+├── .env
+├── package.json
+├── tsconfig.json
+└── README.md
 ```
-
----
-
-## 🛠️ Usage (Local Testing)
-
-### 1. Build Docker image
-```bash
-docker build -t graphrunnerds .
-```
-
-### 2. Launch agents with unique templates
-```bash
-bash launch-multi.sh
-```
-
-### 3. Start GraphRunner on port 3000 (must expose `/ingest`)
-```bash
-cd ../GraphRunner
-npm run dev
-```
-
-### 4. Watch the logs
-```bash
-docker logs -f graphrunner-ds-01
-```
-
-Kafka-enabled mode will publish to graphrunner.ingest topic instead of HTTP.
 
 ---
 
@@ -71,24 +52,23 @@ Kafka-enabled mode will publish to graphrunner.ingest topic instead of HTTP.
 
 These can be set via `.env` or inline with `docker run`:
 
-| Variable                 | Description                                                | Default                          |
-|--------------------------|------------------------------------------------------------|----------------------------------|
-| `TEMPLATE_ID`            | ID of the template to use (e.g. `01`, `10`)                | `01`                             |
-| `SEND_INTERVAL_MS`       | Delay between emissions in milliseconds                    | `1000`                           |
-| `USE_KAFKA`              | If `true`, sends data to Kafka topic                       | `false`                          |
-| `KAFKA_MODE`             | Mode to resolve broker address (`local` or `docker`)       | `local`                          |
-| `KAFKA_BROKER_LOCALHOST` | Kafka broker for local use                                 | `localhost:9092`                 |
-| `KAFKA_BROKER_DOCKER`    | Kafka broker for Docker use                                | `kafka:9092`                     |
-| `KAFKA_TOPIC`            | Kafka topic to publish to                                  | `graphrunner.ingest`             |
-| `GRAPH_RUNNER_URL`       | HTTP fallback endpoint for ingestion                       | `http://localhost:3030/ingest`   |
-
-
+| Variable                 | Description                                                     | Default                            |
+|--------------------------|-----------------------------------------------------------------|------------------------------------|
+| `ENABLED_SOURCES`        | Comma-separated list of active modules (e.g. `ingestion-faker`) |                                    |
+| `TEMPLATE_PATH`          | Path to the JSON template                                       | `./templates/sample-template.json` |
+| `SEND_INTERVAL_MS`       | Delay between emissions in milliseconds                         | `1000`                             |
+| `USE_KAFKA`              | If `true`, sends data to Kafka topic                            | `false`                            |
+| `KAFKA_MODE`             | Mode to resolve broker address (`local` or `docker`)            | `local`                            |
+| `KAFKA_BROKER_LOCALHOST` | Kafka broker for local use                                      | `localhost:9092`                   |
+| `KAFKA_BROKER_DOCKER`    | Kafka broker for Docker use                                     | `kafka:9092`                       |
+| `KAFKA_TOPIC`            | Kafka topic to publish to                                       | `graphrunner.ingest`               |
+| `GRAPH_RUNNER_URL`       | HTTP fallback endpoint for ingestion                            | `http://localhost:3030/ingest`     |
 
 ---
 
-## 📁 Template Format
+## 📚 Template Format (used by `ingestion-faker`)
 
-Templates live in `templates/` and must be named like:
+Templates must be named like:
 ```
 01-sample-template.json
 02-sample2-template.json
@@ -104,31 +84,63 @@ These are rendered with Faker.js and sent as JSON payloads.
 
 ---
 
-## ✅ Coming Soon
+## 🚀 Vectorizer (Private)
 
-- [x] Support for Kafka
+The `vectorizer` module is currently private and not included in public releases.
+
+It is designed to:
+- Accept input from local folders or Google Drive links
+- Process and vectorize content
+- Forward results to GraphRunner for LLM use
+
+> _Contact the author for licensing, partnership, or demo access._
+
+---
+
+## 🚧 Usage
+
+```bash
+# Install dependencies
+npm install
+
+# Run via ts-node
+npx ts-node packages/core/index.ts
+```
+
+---
+
+## 🚨 Coming Soon
+
+- [x] Modular ingestion architecture
+- [x] Kafka + REST delivery
+- [ ] Vectorizer file processor integration
+- [ ] Configurable LLM/AI embedding engine
+- [ ] Live `/modules` health endpoint
+- [ ] Template catalogue with UI
 - [ ] Exposed config control API (start/stop/change rate)
 - [ ] Public-friendly template set (IoT, fraud, social, etc)
 - [ ] Speed limitation based on each template (100mbits/sec - 1000mbits/sec)
-- [ ] Add a 'catalogue' for templates
 
 ---
 
-## 🤝 Contributions
+## 🙌 Contributions
 
-Feel free to fork and extend this! All contributions are welcome — especially:
-- new data model templates
-- rate limiting strategies
-- visual dashboards for real-time traffic
-
----
-
-## 👀 See Also
-
-- [GraphRunner](https://github.com/RORVI/GraphRunner) – backend ingestion + processing engine
-- [JanusGraph Visualizer for GraphRunner](https://github.com/RORVI/janusgraph-visualizer-for-graphrunner) – graph UI to browse the live data
+Fork and extend — especially welcome:
+- New data templates
+- Vectorization plugins
+- Additional ingestion adapters
+- Rate limiting strategies
+- Visual dashboards for real-time traffic
 
 ---
 
-## 📣 License
-MIT — except the templates, which are local/dev-only for now.
+## 🔍 See Also
+
+- [GraphRunner](https://github.com/RORVI/GraphRunner) – Graph ingestion and analytics engine
+- [JanusGraph Visualizer](https://github.com/RORVI/janusgraph-visualizer-for-graphrunner) – UI for exploring ingested data
+
+---
+
+## 📃 License
+
+MIT — except for the `vectorizer` module and templates (restricted/demo-only).

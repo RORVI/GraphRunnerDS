@@ -1,0 +1,13 @@
+{
+    "name": "@graphrunnerds/vectorizer",
+    "version": "1.0.0",
+    "main": "index.js",
+    "types": "index.d.ts",
+    "scripts": {
+        "start": "ts-node index.ts",
+        "build": "tsc"
+    },
+    "dependencies": {
+        "@graphrunnerds/core": "1.0.0"
+    }
+}

@@ -11,5 +11,6 @@
 # Keep images and binary files untouched
 *.png binary
 *.jpg binary
+
 *.jpeg binary
 *.gif binary

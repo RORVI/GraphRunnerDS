@@ -17,8 +17,15 @@ const kafka = new Kafka({
 
 export const producer = kafka.producer();
 
+let isConnected = false;
+
 export async function sendToKafka(topic: string, message: Record<string, any>) {
   try {
+    if (!isConnected) {
+      await producer.connect();
+      isConnected = true;
+    }
+
     await producer.send({
       topic,
       messages: [

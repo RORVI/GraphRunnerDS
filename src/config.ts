@@ -9,7 +9,7 @@ export interface Config {
 
 export function loadConfig(): Config {
   const templateId = process.env.TEMPLATE_ID || '01';
-  const templateDir = './templates';
+  const templateDir = './templates/network';
 
   const files = fs.readdirSync(templateDir);
   const matchedFile = files.find(f => f.startsWith(templateId + '-'));

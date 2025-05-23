@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import faker from 'faker';
+import { faker } from '@faker-js/faker';
 
 /**
  * Recursively parses a template and replaces any strings like `{{faker.method}}`
@@ -20,11 +20,25 @@ function parseTemplate(template: any): any {
 
   if (typeof template === 'string' && template.startsWith('{{') && template.endsWith('}}')) {
     const expression = template.slice(2, -2).trim();
-    const [category, method] = expression.split('.');
+
+    // Support format like: helpers.arrayElement:['A','B','C']
+    const [rawMethod, rawArgs] = expression.split(':');
+    const [category, method] = rawMethod.split('.');
+
     const fakerFunc = (faker as any)?.[category]?.[method];
 
     if (typeof fakerFunc === 'function') {
-      return fakerFunc();
+      if (rawArgs) {
+        try {
+          const parsedArgs = eval(rawArgs); // Safe in trusted template context
+          return fakerFunc(...parsedArgs);
+        } catch (err) {
+          console.warn(`⚠️ Failed to parse arguments for: ${expression}`);
+          return template;
+        }
+      } else {
+        return fakerFunc();
+      }
     } else {
       console.warn(`⚠️ Unknown faker method: ${expression}`);
       return template;

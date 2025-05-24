@@ -107,6 +107,88 @@ npm install
 npx ts-node packages/core/index.ts
 ```
 
+## 🧪 Data Generator Control API
+
+The Control API allows you to dynamically manage a GraphRunner-compatible data generator (like `ingestion-faker`) at runtime.
+
+### 🔌 Base URL
+
+```
+http://localhost:4001/control
+```
+
+---
+
+### 📥 POST `/start`
+
+Starts the data emitter loop.
+
+#### Request Body:
+```json
+{
+  "rate": 1000  // Optional. Emit interval in milliseconds. Defaults to previous or 1000ms.
+}
+```
+
+#### Example:
+```bash
+curl -X POST http://localhost:4001/control/start \
+  -H "Content-Type: application/json" \
+  -d '{"rate": 500}'
+```
+
+---
+
+### 🔄 POST `/rate`
+
+Dynamically update the send interval **without stopping** the generator.
+
+#### Request Body:
+```json
+{
+  "rate": 250  // Emit interval in milliseconds
+}
+```
+
+#### Example:
+```bash
+curl -X POST http://localhost:4001/control/rate \
+  -H "Content-Type: application/json" \
+  -d '{"rate": 250}'
+```
+
+---
+
+### ⏹️ POST `/stop`
+
+Stops the generator loop. No payload required.
+
+#### Example:
+```bash
+curl -X POST http://localhost:4001/control/stop
+```
+
+---
+
+### 📊 GET `/status`
+
+Returns the current generator status.
+
+#### Response:
+```json
+{
+  "isRunning": true,
+  "intervalMs": 250
+}
+```
+
+#### Example:
+```bash
+curl http://localhost:4001/control/status
+```
+
+---
+
 ---
 
 ## 🚨 Coming Soon
@@ -117,7 +199,7 @@ npx ts-node packages/core/index.ts
 - [ ] Configurable LLM/AI embedding engine
 - [ ] Live `/modules` health endpoint
 - [ ] Template catalogue with UI
-- [ ] Exposed config control API (start/stop/change rate)
+- [x] Exposed config control API (start/stop/change rate)
 - [ ] Public-friendly template set (IoT, fraud, social, etc)
 - [x] Speed limitation based on each template (100mbits/sec - 1000mbits/sec)
 

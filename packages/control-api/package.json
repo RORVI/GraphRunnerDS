@@ -1,0 +1,11 @@
+{
+    "name": "@graphrunnerds/control-api",
+    "version": "1.0.0",
+    "main": "api.ts",
+    "dependencies": {
+        "express": "^4.18.2"
+    },
+    "devDependencies": {
+        "@types/express": "^5.0.2"
+    }
+}

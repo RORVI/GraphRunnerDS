@@ -119,7 +119,7 @@ npx ts-node packages/core/index.ts
 - [ ] Template catalogue with UI
 - [ ] Exposed config control API (start/stop/change rate)
 - [ ] Public-friendly template set (IoT, fraud, social, etc)
-- [ ] Speed limitation based on each template (100mbits/sec - 1000mbits/sec)
+- [x] Speed limitation based on each template (100mbits/sec - 1000mbits/sec)
 
 ---
 

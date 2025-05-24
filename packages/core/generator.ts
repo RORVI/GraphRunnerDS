@@ -48,6 +48,19 @@ function parseTemplate(template: any): any {
   return template;
 }
 
+export function parseBitrate(bitrateStr: string): number {
+  const match = bitrateStr.match(/^(\d+)([kKmMgG])bps$/);
+  if (!match) return 0;
+
+  const value = parseInt(match[1], 10);
+  const multiplier = match[2].toLowerCase() === 'k' ? 1e3
+                   : match[2].toLowerCase() === 'm' ? 1e6
+                   : match[2].toLowerCase() === 'g' ? 1e9
+                   : 1;
+
+  return value * multiplier;
+}
+
 export function generateData(templatePath: string): any {
   const raw = fs.readFileSync(path.resolve(templatePath), 'utf-8');
   const template = JSON.parse(raw);
@@ -55,7 +68,7 @@ export function generateData(templatePath: string): any {
 
   console.log("✅ Generated payload:", JSON.stringify(parsed, null, 2));
 
-  // ✅ Ensure proper structure for GraphRunner ingestion
+  // Ensure proper structure for GraphRunner ingestion
   return {
     vertices: parsed.vertices || [],
     edges: parsed.edges || []

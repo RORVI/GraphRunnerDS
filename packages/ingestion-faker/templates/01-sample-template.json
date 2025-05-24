@@ -1,0 +1,16 @@
+{
+  "maxBitrate": "100mbps",
+  "vertices": [
+    {
+      "label": "person",
+      "props": {
+        "id": "{{datatype.uuid}}",
+        "name": "{{name.findName}}",
+        "email": "{{internet.email}}",
+        "company": "{{company.companyName}}",
+        "timestamp": "{{date.recent}}"
+      }
+    }
+  ],
+  "edges": []
+}
